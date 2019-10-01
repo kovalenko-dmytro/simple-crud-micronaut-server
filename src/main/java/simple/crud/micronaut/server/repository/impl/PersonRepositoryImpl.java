@@ -1,11 +1,10 @@
-package simple.crud.micronaut.server.repository.person.impl;
+package simple.crud.micronaut.server.repository.impl;
 
-import com.mongodb.reactivestreams.client.MongoCollection;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import simple.crud.micronaut.server.entity.Person;
-import simple.crud.micronaut.server.repository.person.PersonRepository;
+import simple.crud.micronaut.server.repository.PersonRepository;
 
 import java.util.List;
 
@@ -34,10 +33,5 @@ public class PersonRepositoryImpl implements PersonRepository {
     @Override
     public void delete(long personId) {
 
-    }
-
-    @Override
-    public MongoCollection<Person> getCollection() {
-        return null;
     }
 }
