@@ -1,14 +1,15 @@
 package simple.crud.micronaut.server.entity;
 
 import io.micronaut.core.annotation.Introspected;
-import lombok.AllArgsConstructor;
+import io.micronaut.core.convert.format.Format;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 
 @Introspected
-@AllArgsConstructor
+@Builder
 @Data
 public class Person implements Serializable {
 
@@ -18,5 +19,6 @@ public class Person implements Serializable {
     private String firstName;
     private String lastName;
     private String email;
+    @Format("yyyy-mm-dd")
     private LocalDate birthday;
 }

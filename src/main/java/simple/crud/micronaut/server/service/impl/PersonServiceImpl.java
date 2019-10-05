@@ -1,21 +1,30 @@
 package simple.crud.micronaut.server.service.impl;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
 import io.reactivex.Single;
 import simple.crud.micronaut.server.entity.Person;
+import simple.crud.micronaut.server.repository.PersonRepository;
 import simple.crud.micronaut.server.service.PersonService;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 
+@Singleton
 public class PersonServiceImpl implements PersonService {
 
-    @Override
-    public Flowable<List<Person>> findAll() {
-        return null;
+    private final PersonRepository personRepository;
+
+    @Inject
+    public PersonServiceImpl(PersonRepository personRepository) {
+        this.personRepository = personRepository;
     }
 
     @Override
+    public List<Person> findAll() {
+        return Single.just(personRepository.findAll()).blockingGet();
+    }
+
+    /*@Override
     public Maybe<Person> findById(long personId) {
         return null;
     }
@@ -33,5 +42,5 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public void delete(long personId) {
 
-    }
+    }*/
 }
