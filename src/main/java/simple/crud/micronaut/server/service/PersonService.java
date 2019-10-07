@@ -1,11 +1,10 @@
 package simple.crud.micronaut.server.service;
 
+import io.reactivex.Flowable;
 import simple.crud.micronaut.server.entity.Person;
 
-import java.util.List;
-
 public interface PersonService {
-    List<Person> findAll();
+    Flowable<Person> findAll();
     /*Maybe<Person> findById(long personId);
     Single<Person> save(Person person);
     Single<Person> update(Person person);

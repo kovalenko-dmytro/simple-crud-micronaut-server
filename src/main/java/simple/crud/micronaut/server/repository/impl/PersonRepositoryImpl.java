@@ -2,13 +2,15 @@ package simple.crud.micronaut.server.repository.impl;
 
 
 import io.reactiverse.reactivex.pgclient.PgPool;
+import io.reactiverse.reactivex.pgclient.PgStream;
+import io.reactiverse.reactivex.pgclient.Row;
+import io.reactiverse.reactivex.pgclient.Tuple;
+import io.reactivex.Flowable;
 import simple.crud.micronaut.server.entity.Person;
 import simple.crud.micronaut.server.repository.PersonRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
 
 @Singleton
 public class PersonRepositoryImpl implements PersonRepository {
@@ -23,21 +25,21 @@ public class PersonRepositoryImpl implements PersonRepository {
     }
 
     @Override
-    public List<Person> findAll() {
-
-        return client.rxPreparedQuery(FIND_ALL).map(rowSet -> {
-            List<Person> persons = new ArrayList<>();
-            rowSet.forEach(row -> {
-                Person person = Person.builder()
-                        .personID(row.getInteger("person_id"))
-                        .firstName(row.getString("first_name"))
-                        .lastName(row.getString("last_name"))
-                        .email(row.getString("email"))
-                        .birthday(row.getLocalDate("birthday"))
-                        .build();
-                persons.add(person);
-            });
-            return persons;
-        }).blockingGet();
+    public Flowable<Person> findAll() {
+        return client
+                .rxBegin()
+                .flatMapPublisher(tx -> tx.rxPrepare(FIND_ALL)
+                        .flatMapPublisher(preparedQuery -> {
+                            PgStream<Row> stream = preparedQuery.createStream(100, Tuple.tuple());
+                            return stream.toFlowable();
+                        })
+                        .map(row -> Person.builder()
+                                .personID(row.getInteger("person_id"))
+                                .firstName(row.getString("first_name"))
+                                .lastName(row.getString("last_name"))
+                                .email(row.getString("email"))
+                                .birthday(row.getLocalDate("birthday"))
+                                .build())
+                        .doAfterTerminate(tx::commit));
     }
 }
