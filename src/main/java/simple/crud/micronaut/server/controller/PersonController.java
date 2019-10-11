@@ -2,8 +2,10 @@ package simple.crud.micronaut.server.controller;
 
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.validation.Validated;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import simple.crud.micronaut.server.entity.Person;
 import simple.crud.micronaut.server.service.PersonService;
 
@@ -23,5 +25,10 @@ public class PersonController {
     @Get
     public Flowable<Person> findAll() {
         return personService.findAll();
+    }
+
+    @Get(value = "/{personID}")
+    public Maybe<Person> findByID(@PathVariable long personID) {
+        return personService.findById(personID);
     }
 }

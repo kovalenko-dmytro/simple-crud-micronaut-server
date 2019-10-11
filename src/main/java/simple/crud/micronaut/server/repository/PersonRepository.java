@@ -1,8 +1,10 @@
 package simple.crud.micronaut.server.repository;
 
-import io.reactivex.Flowable;
+import io.micronaut.data.annotation.Repository;
+import io.micronaut.data.repository.reactive.RxJavaCrudRepository;
 import simple.crud.micronaut.server.entity.Person;
 
-public interface PersonRepository {
-    Flowable<Person> findAll();
+@Repository
+public interface PersonRepository extends RxJavaCrudRepository<Person, Long> {
+
 }
