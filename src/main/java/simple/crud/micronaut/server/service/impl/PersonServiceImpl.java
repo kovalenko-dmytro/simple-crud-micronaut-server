@@ -11,8 +11,11 @@ import simple.crud.micronaut.server.service.PersonService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Singleton
+@Transactional
 public class PersonServiceImpl implements PersonService {
 
     private final PersonRepository personRepository;
@@ -23,36 +26,40 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Flowable<Person> findAll() {
-        return personRepository.findAll();
+    public Flowable<PersonDTO> findAll() {
+        return personRepository.findAll().map(Person::convertToDTO);
     }
 
     @Override
-    public Maybe<Person> findById(long personId) {
-        return personRepository.findById(personId);
+    public Maybe<PersonDTO> findById(long personID) throws DomainNoFoundException {
+        Person person = Optional
+                .ofNullable(personRepository.findById(personID).blockingGet())
+                .orElseThrow(() -> new DomainNoFoundException("no found"));
+        return Maybe.just(person).map(Person::convertToDTO);
     }
 
     @Override
-    public Single<Person> save(PersonDTO personDTO) {
-        Person person = new Person().updateFromDTO(personDTO);
-        return personRepository.save(person);
+    public Single<PersonDTO> save(PersonDTO personDTO) {
+        Person person = new Person();
+        person.convertFromDTO(personDTO);
+        return personRepository.save(person).map(Person::convertToDTO);
     }
 
     @Override
-    public Single<Person> update(long personID, PersonDTO personDTO) throws DomainNoFoundException {
-        Person person = personRepository.findById(personID).blockingGet();
-        if (person == null) {
-            throw new DomainNoFoundException("no found");
-        }
-        return personRepository.save(person.updateFromDTO(personDTO));
+    public Single<PersonDTO> update(long personID, PersonDTO personDTO) throws DomainNoFoundException {
+        Person person = Optional
+                .ofNullable(personRepository.findById(personID).blockingGet())
+                .orElseThrow(() -> new DomainNoFoundException("no found"));
+        person.convertFromDTO(personDTO);
+        personRepository.update(personID, person.getFirstName(), person.getLastName(), person.getEmail(), person.getBirthday());
+        return findById(personID).toSingle();
     }
 
     @Override
     public void delete(long personID) throws DomainNoFoundException {
-        Person person = personRepository.findById(personID).blockingGet();
-        if (person == null) {
-            throw new DomainNoFoundException("no found");
-        }
-        personRepository.delete(person);
+        Person person = Optional
+                .ofNullable(personRepository.findById(personID).blockingGet())
+                .orElseThrow(() -> new DomainNoFoundException("no found"));
+        personRepository.delete(person).blockingAwait();
     }
 }

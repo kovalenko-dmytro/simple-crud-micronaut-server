@@ -11,6 +11,7 @@ import javax.validation.constraints.Size;
 @Data
 public class PersonDTO {
 
+    private long personID;
     @NotBlank
     @Size(max = 30)
     private String firstName;

@@ -1,18 +1,21 @@
 package simple.crud.micronaut.server.controller;
 
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.PathVariable;
+import io.micronaut.http.annotation.*;
 import io.micronaut.validation.Validated;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import simple.crud.micronaut.server.entity.Person;
+import io.reactivex.Single;
+import simple.crud.micronaut.server.dto.PersonDTO;
+import simple.crud.micronaut.server.exception.DomainNoFoundException;
 import simple.crud.micronaut.server.service.PersonService;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 @Controller("/api/persons")
 @Validated
+@Transactional
 public class PersonController {
 
     private final PersonService personService;
@@ -23,12 +26,27 @@ public class PersonController {
     }
 
     @Get
-    public Flowable<Person> findAll() {
+    public Flowable<PersonDTO> findAll() {
         return personService.findAll();
     }
 
     @Get(value = "/{personID}")
-    public Maybe<Person> findByID(@PathVariable long personID) {
+    public Maybe<PersonDTO> findByID(@PathVariable long personID) throws DomainNoFoundException {
         return personService.findById(personID);
+    }
+
+    @Post
+    public Single<PersonDTO> create(@Valid @Body PersonDTO personDTO) {
+        return personService.save(personDTO);
+    }
+
+    @Put(value = "/{personID}")
+    public Single<PersonDTO> update(@PathVariable long personID, @Valid @Body PersonDTO personDTO) throws DomainNoFoundException {
+        return personService.update(personID, personDTO);
+    }
+
+    @Delete(value = "/{personID}")
+    public void delete(@PathVariable long personID) throws DomainNoFoundException {
+        personService.delete(personID);
     }
 }
